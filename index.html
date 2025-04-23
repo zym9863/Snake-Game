@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇游戏</title>
+    <!-- 添加Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 添加Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4ecca3;
+            --secondary-color: #393e46;
+            --accent-color: #ff9a3c;
+            --dark-color: #232931;
+            --light-color: #eeeeee;
+            --snake-head-color: #ff5e78;
+            --snake-body-color: #4ecca3;
+            --food-color: #ffbd69;
+            --food-highlight: #ffed99;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--dark-color);
+            color: var(--light-color);
+            font-family: 'Poppins', 'Microsoft YaHei', sans-serif;
+            transition: background-color 0.5s;
+            overflow: hidden;
+        }
+
+        .game-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-title i {
+            margin-right: 10px;
+            color: var(--snake-head-color);
+            font-size: 1.5em;
+        }
+
+        .game-container {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        canvas {
+            border: 3px solid var(--secondary-color);
+            background-color: #1a1d24;
+            display: block;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: var(--light-color);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .score-container, .high-score-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .score-container i, .high-score-container i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--dark-color);
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(35, 41, 49, 0.9);
+            color: var(--light-color);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--primary-color);
+            min-width: 250px;
+        }
+
+        .game-over h2 {
+            color: var(--snake-head-color);
+            margin-top: 0;
+        }
+
+        .game-over i {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        .game-over p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        /* 添加响应式设计 */
+        @media (max-width: 500px) {
+            .game-info, canvas {
+                width: 90vw;
+                height: auto;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="game-title"><i class="fas fa-snake"></i>贪吃蛇游戏</h1>
+
+    <div class="game-info">
+        <div class="score-container">
+            <i class="fas fa-star"></i>
+            <span>分数: <span id="score">0</span></span>
+        </div>
+        <div class="high-score-container">
+            <i class="fas fa-trophy"></i>
+            <span>最高分: <span id="high-score">0</span></span>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <canvas id="game-canvas" width="400" height="400"></canvas>
+        <div id="game-over" class="game-over">
+            <i class="fas fa-skull"></i>
+            <h2>游戏结束!</h2>
+            <p>你的分数: <span id="final-score">0</span></p>
+            <button id="restart-button"><i class="fas fa-redo"></i>重新开始</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="start-button"><i class="fas fa-play"></i>开始游戏</button>
+        <button id="pause-button"><i class="fas fa-pause"></i>暂停</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
