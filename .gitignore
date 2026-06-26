@@ -1,0 +1,12 @@
+.venv/
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+.vite/
+.tmp/
+.npm-cache/
+.docker/
+*.db
+*.sqlite
+*.log
